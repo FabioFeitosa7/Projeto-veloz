@@ -1,0 +1,67 @@
+{% extends "estoque/base.html" %}
+
+{% block title %}Revisão de {{ fechamento }} | Controle de Estoque{% endblock %}
+
+{% block content %}
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">Revisão</p>
+      <h1>Confira o fechamento de {{ fechamento }}</h1>
+      <p>Nenhuma alteração foi aplicada. Confirme somente depois de conferir os valores.</p>
+    </div>
+    <span class="badge badge-inactive">Ainda é rascunho</span>
+  </div>
+
+  <section class="dashboard-section" aria-labelledby="titulo-compras">
+    <div class="section-heading"><h2 id="titulo-compras">Lista de compras</h2></div>
+    {% if compras %}
+      <div class="purchase-list">
+        {% for item in compras %}<p>{{ item.linha_compra }}</p>{% endfor %}
+      </div>
+    {% else %}
+      <p class="quiet-state">Nenhum ingrediente precisa ser comprado neste mês.</p>
+    {% endif %}
+  </section>
+
+  <section class="dashboard-section" aria-labelledby="titulo-calculos">
+    <div class="section-heading">
+      <h2 id="titulo-calculos">Como cada valor foi calculado</h2>
+    </div>
+    <div class="closing-list review-list">
+      {% for item in revisao %}
+        <article class="closing-card">
+          <div class="closing-card-heading">
+            <div><h3>{{ item.item.nome_registrado }}</h3><p>{{ item.explicacao }}</p></div>
+            {% if item.linha_compra %}
+              <span class="badge badge-active">Comprar</span>
+            {% else %}
+              <span class="badge badge-inactive">Nada a comprar</span>
+            {% endif %}
+          </div>
+          <dl class="data-grid review-data">
+            <div><dt>Meta anterior</dt><dd>{{ item.item.meta_anterior|floatformat:"-3" }}</dd></div>
+            <div><dt>Consumo</dt><dd>{{ item.item.consumo_mensal|floatformat:"-3" }}</dd></div>
+            <div><dt>Estoque informado</dt><dd>{{ item.item.estoque_restante|floatformat:"-3" }}</dd></div>
+            <div><dt>Estoque aproveitável</dt><dd>{{ item.resultado.estoque_aproveitavel|floatformat:"-3" }}</dd></div>
+            <div><dt>Nova meta</dt><dd>{{ item.resultado.meta_resultante|floatformat:"-3" }}</dd></div>
+            <div><dt>Quantidade de compra</dt><dd>{{ item.resultado.quantidade_compra|floatformat:"-3" }} {{ item.item.get_unidade_registrada_display }}</dd></div>
+          </dl>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <div class="sticky-actions">
+    <a class="button button-secondary" href="{% url 'estoque:fechamento_editar' fechamento.pk %}">
+      Voltar e corrigir
+    </a>
+    <form
+      method="post"
+      action="{% url 'estoque:fechamento_finalizar' fechamento.pk %}"
+      data-confirm="Finalizar este fechamento? As metas e o estoque serão atualizados e o mês não poderá mais ser editado."
+    >
+      {% csrf_token %}
+      <button class="button button-primary" type="submit">Confirmar e finalizar</button>
+    </form>
+  </div>
+{% endblock %}

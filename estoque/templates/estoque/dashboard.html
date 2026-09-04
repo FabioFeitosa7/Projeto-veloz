@@ -1,0 +1,102 @@
+{% extends "estoque/base.html" %}
+
+{% block title %}Início | Controle de Estoque{% endblock %}
+
+{% block content %}
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">Planejamento mensal</p>
+      <h1>Visão geral</h1>
+      <p>Últimas informações registradas em {{ hoje|date:"d/m/Y" }}.</p>
+    </div>
+    <div class="heading-actions">
+      <a class="button button-secondary" href="{% url 'estoque:ingrediente_novo' %}">
+        Cadastrar ingrediente
+      </a>
+      <a class="button button-primary" href="{% url 'estoque:fechamento_inicio' %}">
+        Iniciar fechamento
+      </a>
+    </div>
+  </div>
+
+  <section class="summary-grid" aria-label="Resumo do estoque">
+    <article class="summary-card">
+      <strong>{{ total_ingredientes }}</strong>
+      <span>ingrediente{{ total_ingredientes|pluralize }}</span>
+    </article>
+    <article class="summary-card summary-warning">
+      <strong>{{ total_proximos }}</strong>
+      <span>vence{{ total_proximos|pluralize:"m" }} em até 7 dias</span>
+    </article>
+    <article class="summary-card summary-danger">
+      <strong>{{ total_vencidos }}</strong>
+      <span>vencido{{ total_vencidos|pluralize }}</span>
+    </article>
+  </section>
+
+  <section class="dashboard-section" aria-labelledby="titulo-alertas">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Atenção</p>
+        <h2 id="titulo-alertas">Validades que exigem cuidado</h2>
+      </div>
+    </div>
+    {% if alertas %}
+      <div class="alert-list">
+        {% for ingrediente in alertas %}
+          <a class="alert-row" href="{% url 'estoque:ingrediente_detalhe' ingrediente.pk %}">
+            <span>
+              <strong>{{ ingrediente.nome }}</strong>
+              <small>Validade: {{ ingrediente.data_validade|date:"d/m/Y" }}</small>
+            </span>
+            <span class="badge badge-{{ ingrediente.resumo_validade.situacao.value }}">
+              {{ ingrediente.resumo_validade.descricao }}
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="quiet-state">Nenhum ingrediente próximo do vencimento ou vencido.</p>
+    {% endif %}
+  </section>
+
+  <section class="dashboard-section" aria-labelledby="titulo-estoque">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Estoque</p>
+        <h2 id="titulo-estoque">Ingredientes ativos</h2>
+      </div>
+      <a href="{% url 'estoque:ingrediente_lista' %}">Ver todos</a>
+    </div>
+    {% if ingredientes %}
+      <div class="compact-list">
+        {% for ingrediente in ingredientes %}
+          <a class="compact-row" href="{% url 'estoque:ingrediente_detalhe' ingrediente.pk %}">
+            <span>
+              <strong>{{ ingrediente.nome }}</strong>
+              <small>
+                Último estoque:
+                {{ ingrediente.estoque_atual|floatformat:"-3" }}
+                {{ ingrediente.get_unidade_display }}
+              </small>
+              <span class="stock-track" aria-label="{{ ingrediente.percentual_estoque|floatformat:0 }}% da meta em estoque">
+                <span style="width: {{ ingrediente.percentual_estoque|stringformat:'f' }}%"></span>
+              </span>
+            </span>
+            <span class="badge badge-{{ ingrediente.resumo_validade.situacao.value }}">
+              {{ ingrediente.resumo_validade.descricao }}
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <section class="empty-state">
+        <h2>Cadastre o primeiro ingrediente</h2>
+        <p>Os alertas e as informações mensais aparecerão aqui.</p>
+        <a class="button button-primary" href="{% url 'estoque:ingrediente_novo' %}">
+          Cadastrar ingrediente
+        </a>
+      </section>
+    {% endif %}
+  </section>
+{% endblock %}

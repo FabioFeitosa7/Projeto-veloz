@@ -1,0 +1,64 @@
+{% extends "estoque/base.html" %}
+
+{% block title %}Fechamento {{ fechamento }} | Controle de Estoque{% endblock %}
+
+{% block content %}
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">Histórico mensal</p>
+      <h1>Fechamento de {{ fechamento }}</h1>
+      <p>Registro preservado com os dados e resultados daquele mês.</p>
+    </div>
+    <span class="badge {% if fechamento.status == 'FINALIZADO' %}badge-active{% else %}badge-inactive{% endif %}">
+      {{ fechamento.get_status_display }}
+    </span>
+  </div>
+
+  {% if fechamento.status == 'FINALIZADO' %}
+    <section class="dashboard-section" aria-labelledby="titulo-lista">
+      <div class="section-heading">
+        <h2 id="titulo-lista">Lista de compras</h2>
+        <div class="heading-actions">
+          <a class="button button-secondary" href="{% url 'estoque:fechamento_download_txt' fechamento.pk %}">Baixar TXT</a>
+          <a class="button button-secondary" href="{% url 'estoque:fechamento_download_csv' fechamento.pk %}">Baixar CSV</a>
+        </div>
+      </div>
+      {% if compras %}
+        <div class="purchase-list">
+          {% for item in compras %}<p>{{ item.linha }}</p>{% endfor %}
+        </div>
+      {% else %}
+        <p class="quiet-state">Nenhum item precisa ser comprado</p>
+      {% endif %}
+    </section>
+  {% else %}
+    <div class="status-action">
+      <div><h2>Este fechamento ainda é um rascunho</h2><p>Finalize-o para liberar a lista e os downloads.</p></div>
+      <a class="button button-primary" href="{% url 'estoque:fechamento_editar' fechamento.pk %}">Continuar preenchimento</a>
+    </div>
+  {% endif %}
+
+  <section class="dashboard-section" aria-labelledby="titulo-itens">
+    <div class="section-heading"><h2 id="titulo-itens">Dados registrados</h2></div>
+    <div class="closing-list review-list">
+      {% for item in itens %}
+        <article class="closing-card">
+          <div class="closing-card-heading">
+            <h3>{{ item.nome_registrado }}</h3>
+            <span>{{ item.get_unidade_registrada_display }}</span>
+          </div>
+          <dl class="data-grid review-data">
+            <div><dt>Meta anterior</dt><dd>{{ item.meta_anterior|floatformat:"-3" }}</dd></div>
+            <div><dt>Consumo</dt><dd>{{ item.consumo_mensal|default_if_none:"—"|floatformat:"-3" }}</dd></div>
+            <div><dt>Estoque restante</dt><dd>{{ item.estoque_restante|default_if_none:"—"|floatformat:"-3" }}</dd></div>
+            <div><dt>Validade</dt><dd>{{ item.validade_registrada|date:"d/m/Y"|default:"—" }}</dd></div>
+            <div><dt>Houve falta?</dt><dd>{{ item.houve_falta|yesno:"Sim,Não" }}</dd></div>
+            <div><dt>Estava vencido?</dt><dd>{{ item.estava_vencido|yesno:"Sim,Não,—" }}</dd></div>
+            <div><dt>Meta resultante</dt><dd>{{ item.meta_resultante|default_if_none:"—"|floatformat:"-3" }}</dd></div>
+            <div><dt>Quantidade de compra</dt><dd>{{ item.quantidade_compra|default_if_none:"—"|floatformat:"-3" }}</dd></div>
+          </dl>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
