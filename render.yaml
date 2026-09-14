@@ -3,7 +3,7 @@ services:
     name: projeto-veloz-api
     runtime: python
     plan: free
-    branch: refatoracao
+    branch: main
     buildCommand: bash build.sh
     startCommand: gunicorn --chdir backend config.wsgi:application
     healthCheckPath: /
