@@ -1,156 +1,118 @@
-# Sistema de Controle de Estoque
+# Estoque Veloz
 
-Aplicação web em Django para apoiar o planejamento mensal do estoque de um restaurante. O sistema registra ingredientes, acompanha validades, calcula reposições e gera uma lista de compras legível no navegador, em TXT, CSV e no terminal.
+Sistema web para controle mensal de estoque de um restaurante. O backend Django concentra as regras de reposição e disponibiliza uma API; o frontend React oferece uma interface responsiva para cadastro, fechamento mensal, histórico e geração da lista de compras.
 
-O projeto foi desenvolvido para o Desafio Técnico de Controle de Estoque.
+## Funcionalidades principais
 
-## Funcionalidades
+- cadastro, edição, desativação e reativação de ingredientes;
+- acompanhamento do estoque e da validade dos produtos;
+- alertas para produtos vencidos ou próximos do vencimento;
+- fechamento mensal com rascunho, revisão, finalização e cancelamento;
+- atualização da meta com margem de 20% quando há falta antecipada;
+- histórico dos fechamentos;
+- lista de compras no navegador, em TXT, CSV e no terminal.
 
-- cadastro, edição, consulta, desativação e reativação de ingredientes;
-- painel com estoque atual e alertas de validade;
-- aviso de produtos vencidos ou a até sete dias do vencimento;
-- fechamento mensal com salvamento em rascunho;
-- revisão detalhada antes da confirmação;
-- atualização automática da meta quando houve falta antecipada;
-- descarte do estoque vencido no cálculo;
-- histórico mensal imutável depois da finalização;
-- lista de compras em ordem alfabética;
-- downloads em TXT e CSV;
-- impressão da lista no terminal por comando Django;
-- interface responsiva e navegável por teclado;
-- comandos para criação de dados fictícios.
-
-## Regras de negócio
-
-Na reposição normal:
-
-```text
-quantidade a comprar = meta mensal - estoque aproveitável
-```
-
-Quando o ingrediente acaba antes do fim do mês, sua nova meta passa a ser:
-
-```text
-nova meta = consumo mensal × 1,20
-```
-
-Outras decisões aplicadas:
-
-- estoque vencido é considerado zero no cálculo;
-- falta antecipada exige estoque restante igual a zero;
-- unidades indivisíveis são arredondadas para cima;
-- quilogramas e litros podem manter casas decimais;
-- quantidades iguais ou menores que zero não entram na lista;
-- a finalização atualiza os dados de forma atômica, sem alterações parciais.
-
-O formato obrigatório da saída é:
+Formato obrigatório da lista:
 
 ```text
 Comprar: <quantidade> <unidade> de <ingrediente>
 ```
 
+Itens com quantidade calculada igual ou inferior a zero não são incluídos.
+
 ## Tecnologias
 
-- Python 3.10 ou superior;
-- Django 5.2 LTS;
-- HTML, CSS e JavaScript;
-- SQLite.
+- Python e Django 5.2;
+- Django REST Framework;
+- React 19 e Vite;
+- SQLite para execução local sem configuração;
+- PostgreSQL/Supabase quando `DATABASE_URL` é informada.
 
-O frontend usa templates do próprio Django, mantendo a aplicação simples de instalar e entregar, sem necessidade de Node.js ou React.
+## Pré-requisitos
 
-## Instalação e execução
-
-### Pré-requisitos
-
-- Python 3.10 ou superior;
 - Git;
-- acesso a um terminal.
+- Python 3.10 ou superior;
+- Node.js 22 ou superior.
 
-Não é necessário instalar PostgreSQL, Node.js ou React. O banco SQLite é criado automaticamente pelas migrations.
+## Instalação
 
-### Windows com PowerShell
+Clone o repositório e entre na pasta:
 
-```powershell
+```bash
 git clone https://github.com/FabioFeitosa7/Projeto-veloz.git
 cd Projeto-veloz
+```
+
+### Backend — Windows/PowerShell
+
+```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe manage.py migrate
-.\.venv\Scripts\python.exe manage.py runserver
+.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
+.\.venv\Scripts\python.exe backend/manage.py migrate
+.\.venv\Scripts\python.exe backend/manage.py runserver
 ```
 
-### Linux ou macOS
+### Backend — Linux/macOS
 
 ```bash
-git clone https://github.com/FabioFeitosa7/Projeto-veloz.git
-cd Projeto-veloz
 python3 -m venv .venv
-./.venv/bin/python -m pip install --upgrade pip
-./.venv/bin/python -m pip install -r requirements.txt
-./.venv/bin/python manage.py migrate
-./.venv/bin/python manage.py runserver
+./.venv/bin/python -m pip install -r backend/requirements.txt
+./.venv/bin/python backend/manage.py migrate
+./.venv/bin/python backend/manage.py runserver
 ```
 
-Quando o terminal mostrar que o servidor foi iniciado, acesse:
+O backend ficará disponível em `http://127.0.0.1:8000/`.
 
-```text
-http://127.0.0.1:8000/
-```
+### Frontend
 
-Para encerrar o servidor, pressione `Ctrl+C` no terminal.
-
-Os comandos usam diretamente o Python do ambiente virtual, portanto não dependem da ativação do ambiente no shell.
-
-## Demonstração rápida
-
-Depois de executar as migrations e antes de iniciar o servidor, você pode preencher um banco vazio com quatro ingredientes e um fechamento já finalizado.
-
-No Windows:
-
-```powershell
-.\.venv\Scripts\python.exe manage.py carregar_dados_demonstracao
-```
-
-No Linux ou macOS:
+Mantenha o backend rodando. Em outro terminal, execute:
 
 ```bash
-./.venv/bin/python manage.py carregar_dados_demonstracao
+cd frontend
+npm install
+npm run dev
 ```
 
-O conjunto demonstra reposição normal, falta antecipada, vencimento e item sem necessidade de compra. O comando recusa bancos que já possuem dados.
-
-Para apenas acrescentar 16 ingredientes variados a um banco novo ou existente:
+No PowerShell, caso `npm` seja bloqueado pela política de scripts, use:
 
 ```powershell
-.\.venv\Scripts\python.exe manage.py adicionar_ingredientes_exemplo
+npm.cmd install
+npm.cmd run dev
 ```
 
-No Linux ou macOS:
+Acesse `http://localhost:5173/`.
+
+## Dados para demonstração
+
+Para preencher um banco vazio com dados que demonstram as principais regras:
+
+```powershell
+.\.venv\Scripts\python.exe backend/manage.py carregar_dados_demonstracao
+```
+
+No Linux/macOS:
 
 ```bash
-./.venv/bin/python manage.py adicionar_ingredientes_exemplo
+./.venv/bin/python backend/manage.py carregar_dados_demonstracao
 ```
 
-Essa operação preserva cadastros existentes e não cria duplicatas.
+Execute esse comando antes de iniciar o fechamento pelo navegador. Ele recusa bancos que já possuem dados.
 
 ## Lista de compras no terminal
 
-Depois de finalizar um fechamento pelo navegador, abra outro terminal na pasta do projeto e execute o comando substituindo o mês desejado.
-
-No Windows:
+Depois de finalizar um fechamento no sistema, informe o mês no formato `AAAA-MM`:
 
 ```powershell
-.\.venv\Scripts\python.exe manage.py gerar_lista_compras --mes 2026-09
+.\.venv\Scripts\python.exe backend/manage.py gerar_lista_compras --mes 2026-09
 ```
 
-No Linux ou macOS:
+No Linux/macOS:
 
 ```bash
-./.venv/bin/python manage.py gerar_lista_compras --mes 2026-09
+./.venv/bin/python backend/manage.py gerar_lista_compras --mes 2026-09
 ```
 
-Exemplo de saída:
+Exemplo:
 
 ```text
 Comprar: 14 Kg de Farinha
@@ -158,73 +120,65 @@ Comprar: 20 Litros de Leite
 Comprar: 52 Unidades de Ovos
 ```
 
-O comando aceita apenas o formato `AAAA-MM` e exige um fechamento finalizado.
+## Testes e verificações
 
-## Testes
-
-Execute a suíte completa:
+Backend:
 
 ```powershell
-.\.venv\Scripts\python.exe manage.py test
+.\.venv\Scripts\python.exe backend/manage.py test estoque --settings=config.settings_test
 ```
 
-No Linux ou macOS, use `./.venv/bin/python`. A suíte possui 99 testes automatizados cobrindo cálculos, modelos, formulários, páginas, finalização atômica, histórico, exportações e comandos.
+Linux/macOS:
 
-Também é possível executar as verificações internas do Django:
+```bash
+./.venv/bin/python backend/manage.py test estoque --settings=config.settings_test
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm run lint
+npm run test
+npm run build
+```
+
+Os testes do backend usam um SQLite temporário e não alteram o Supabase.
+
+## Configuração opcional do PostgreSQL
+
+Sem um arquivo `.env`, o backend utiliza SQLite. Para usar PostgreSQL/Supabase, copie `.env.example` para `.env` e preencha `DATABASE_URL`:
 
 ```powershell
-.\.venv\Scripts\python.exe manage.py check
-.\.venv\Scripts\python.exe manage.py makemigrations --check --dry-run
+Copy-Item .env.example .env
 ```
 
-## Estrutura do projeto
+```env
+DATABASE_URL=postgresql://usuario:senha@servidor:6543/postgres
+```
+
+O `.env` é ignorado pelo Git. Nunca publique senhas ou URLs reais do banco.
+
+Para apontar o React para outro endereço do backend, copie `frontend/.env.example` para `frontend/.env` e defina:
+
+```env
+VITE_API_URL=https://endereco-do-backend/api
+```
+
+## Estrutura
 
 ```text
-config/                 configurações e URLs globais do Django
-estoque/
-├── management/         comandos executados pelo manage.py
-├── migrations/         definição versionada do banco de dados
-├── services/           cálculos, fechamentos e exportações
-├── static/             CSS e JavaScript
-├── templates/          páginas HTML
-├── tests/              testes automatizados
-├── forms.py            formulários e validações
-├── models.py           entidades e restrições do banco
-├── urls.py             rotas da aplicação
-└── views.py            fluxos das páginas
-manage.py               entrada administrativa do Django
-requirements.txt        dependências do projeto
+backend/     aplicação Django, API, regras de negócio e testes
+frontend/    aplicação React, estilos e testes da interface
 ```
 
-Os cálculos foram mantidos em serviços independentes da interface. Dessa maneira, navegador, arquivos e terminal reutilizam as mesmas regras e o mesmo formatador.
+## Regras de negócio resumidas
 
-## Configuração por ambiente
+- reposição normal: `meta mensal - estoque aproveitável`;
+- em caso de falta: `nova meta = consumo mensal × 1,20`;
+- estoque vencido é desconsiderado;
+- unidades indivisíveis são arredondadas para cima;
+- quilogramas e litros podem possuir casas decimais;
+- fechamentos finalizados não podem ser alterados;
+- fechamentos cancelados continuam disponíveis no histórico.
 
-O desenvolvimento local funciona sem criar um arquivo `.env`. Para uma publicação, configure no ambiente:
-
-```text
-DJANGO_SECRET_KEY=uma-chave-longa-aleatoria-e-exclusiva
-DJANGO_DEBUG=False
-DJANGO_ALLOWED_HOSTS=seu-dominio.example.com
-```
-
-O arquivo [.env.example](.env.example) documenta essas variáveis sem armazenar segredos. Quando `DEBUG=False`, a aplicação exige uma chave externa e ativa redirecionamento HTTPS, HSTS e cookies seguros.
-
-## Limitações da primeira versão
-
-- não há autenticação ou diferentes perfis de usuário;
-- não há controle por lote;
-- não há registro de cada retirada ou compra;
-- não há cálculo por tamanho de embalagem;
-- os valores mensais são informados manualmente;
-- SQLite é utilizado como banco local.
-
-## Melhorias futuras
-
-- autenticação e permissões;
-- controle de lotes e múltiplas validades;
-- registro diário de entradas e saídas;
-- conversão automática por tamanho de embalagem;
-- relatórios comparativos com gráficos;
-- publicação em um serviço de hospedagem.
-#

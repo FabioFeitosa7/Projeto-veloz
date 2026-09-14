@@ -48,5 +48,6 @@ Desktop.ini
 # Builds e pacotes
 build/
 dist/
+node_modules/
+frontend/coverage/
 *.egg-info/
-
