@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: projeto-veloz-api
+    runtime: python
+    plan: free
+    branch: main
+    buildCommand: bash build.sh
+    startCommand: gunicorn --chdir backend config.wsgi:application
+    healthCheckPath: /
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: API_NUM_PROXIES
+        value: "1"
